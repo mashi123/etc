@@ -1,3 +1,16 @@
+# jqコマンド
+### json配列にプロパティの追加
+各要素に`addparam: null`を追加する例。
+```bash
+jq 'map(. + {addparam: null})' 1.json > 1-modified.json
+```
+
+### 2つのjsonファイル(配列)のマージ
+admin1をキーにグループ化してマージする例。
+```bash
+jq -s 'map(.[]) | group_by(.admin1) | map(add)' 1-modified.json 1-addparam.json > 1-merged.json
+```
+
 # ubuntu24.04でautofs
 /mnt/hddにハードディスクのドライブ(ntfs)をマウントするケース。
 
