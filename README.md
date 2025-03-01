@@ -57,7 +57,7 @@ https://wiki.archlinux.jp/index.php/Autofs
 
   
   
-## WindowsでCPU、メモリ消費量モニター(1秒おき)
+# WindowsでCPU、メモリ消費量モニター(1秒おき)
 以下で表示できるが、CPU時間なのでクロックで割り算要。
 
 ```
@@ -77,3 +77,64 @@ while ($true) {
      Start-Sleep -Seconds 1
 }
 ```
+
+# kubernetesのCronJobリソースでConfigMapとhostPath両方利用する例
+### ConfigMap作成
+```bash
+cat >example.sh <<EOF
+#!/bin/sh
+date > /tmp/foo/\$(date +%s)
+EOF
+
+kubectl create configmap example-cm --from-file=example.sh
+```
+
+### Cronjobマニフェスト作成
+ConfigMapでマウントしたシェルスクリプトから、hostPathにマウントしたディレクトリに1分おきにファイル出力。
+```bash
+cat >cronjob.yaml <<EOF
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sample
+            image: bash/3.1.23
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - /mnt/example.sh
+            volumeMounts:
+            - name: log-volume
+              mountPath: /tmp/foo
+              readOnly: false
+            - name: script-volume
+              mountPath: /mnt
+          restartPolicy: OnFailure
+          volumes:
+          - name: log-volume
+            hostPath:
+              path: /tmp/foo
+              type: DirectoryOrCreate
+          - name: script-volume
+            configMap:
+              name: example-cm
+              defaultMode: 0755
+EOF
+```
+### CronJob作成
+```bash
+kubectl apply -f cronjob.yaml
+```
+
+### 参考
+- https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#create-a-configmap
+- https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/
+- https://kubernetes.io/docs/concepts/storage/volumes/
