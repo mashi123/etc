@@ -1,3 +1,7 @@
+# vscode
+### pythonのパス
+`ctrl + shift + P`でインタープリタ選択から指定可能。
+
 # jqコマンド
 ### json配列にプロパティの追加
 各要素に`addparam: null`を追加する例。
