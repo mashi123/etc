@@ -280,3 +280,25 @@ spec:
    ```bash
    kubectl get secret rook-ceph-dashboard-password -o yaml -n rook-ceph
    ```
+
+6. スナップショットの設定
+
+   k8s公式のスナップショットのコントローラーをインストールする。
+
+   ```bash
+   git clone https://github.com/kubernetes-csi/external-snapshotter.git
+   kubectl kustomize client/config/crd | kubectl create -f -
+   kubectl -n kube-system kustomize deploy/kubernetes/snapshot-controller | kubectl create -f -
+   ```
+
+Rook cephのブロックストレージ用のスナップショット設定をする。
+
+```bash
+kubectl create -f $HOME/rook/deploy/examples/csi/rbd/snapshotclass.yaml
+kubectl get volumesnapshotclass
+```
+
+参考
+
+- https://github.com/kubernetes-csi/external-snapshotter/tree/master#usage
+- https://rook.io/docs/rook/latest-release/Storage-Configuration/Ceph-CSI/ceph-csi-snapshot/
