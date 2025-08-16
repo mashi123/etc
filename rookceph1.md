@@ -162,6 +162,19 @@ storage: # cluster level storage configuration and selection
   allowOsdCrushWeightUpdate: false # whether to allow resizing the OSD crush weight after osd pvc is increased
 ```
 
+### 設定例 (Masterノードのディスクを使う場合)
+
+以下を追加する。
+
+```yaml
+placement:
+  all:
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Equal
+        effect: NoSchedule
+```
+
 ## StorageClass
 
 ```yaml
@@ -278,7 +291,7 @@ spec:
    パスワードの確認方法は以下。
 
    ```bash
-   kubectl get secret rook-ceph-dashboard-password -o yaml -n rook-ceph
+   kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 --decode && echo
    ```
 
 6. スナップショットの設定
